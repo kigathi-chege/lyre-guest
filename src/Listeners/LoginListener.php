@@ -12,7 +12,7 @@ class LoginListener
      */
     public function __construct(\Illuminate\Auth\Events\Login $event)
     {
-        dd($event);
+        logger("useer has logged in!!!", [$event]);
     }
 
     /**

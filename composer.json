@@ -1,19 +1,32 @@
 {
-    "name": "lyre/guest",
-    "description": "Simple package to track all guest access",
-    "type": "library",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Lyre\\Guest\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "kigathi-chege",
-            "email": "chegekigathi@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {}
+  "name": "lyre/guest",
+  "description": "Simple package to track all guest access",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.0.1",
+  "autoload": {
+    "psr-4": {
+      "Lyre\\Guest\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "kigathi-chege",
+      "email": "chegekigathi@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^8.2",
+    "filament/filament": "^3.3",
+    "codeat3/blade-google-material-design-icons": "^1.20",
+    "lyre/lyre": "^1.1"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Lyre\\Guest\\Providers\\LyreGuestServiceProvider"
+      ]
+    }
+  }
 }
