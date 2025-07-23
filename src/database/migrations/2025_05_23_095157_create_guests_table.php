@@ -26,7 +26,7 @@ return new class extends Migration
                 $table->string('language')->nullable();
                 $table->string('session_id')->nullable();
 
-                $table->uuid('guest_uuid')->unique()->nullable();
+                $table->uuid('uuid')->unique()->nullable();
                 $table->foreignId('user_id')->nullable()->constrained();
             });
         }

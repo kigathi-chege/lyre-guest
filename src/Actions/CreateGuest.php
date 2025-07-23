@@ -3,31 +3,24 @@
 namespace Lyre\Guest\Actions;
 
 use Lyre\Guest\Models\Guest;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Contracts\Auth\StatefulGuard;
-use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Illuminate\Support\Str;
-
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Session;
 use Stevebauman\Location\Facades\Location;
 
-class CreateGuestUser
+class CreateGuest
 {
-    public function __invoke(StatefulGuard $guard, CreatesNewUsers $creator)
+    public function __invoke()
     {
         $uuid = Cookie::get('guest_uuid') ?? (string) Str::uuid();
 
-        $guest = Guest::where('guest_uuid', $uuid)->first();
+        $guest = Guest::where('uuid', $uuid)->first();
 
         $position = Location::get(request()->ip());
 
         $country = $position?->countryName ?? null;
         $city    = $position?->cityName ?? null;
 
-        if ($guest && $guest->user) {
-            $guard->login($guest->user, true);
-            session()->regenerate();
+        if ($guest) {
             $guest->update([
                 'country' => $country ?? $guest->country,
                 'city' => $city ?? $guest->city,
@@ -46,47 +39,10 @@ class CreateGuestUser
                 'area_code' => $position?->areaCode ?? $guest->currency_code,
                 'timezone' => $position?->timezone ?? $guest->currency_code
             ]);
-            return $guest->user;
+            return $guest;
         }
 
-        $password = bin2hex(random_bytes(6));
-        // $appName = clean_str(config('app.name'));
-
-        $details = [
-            'name' => 'Guest_' . Str::random(6),
-            'email' => 'guest_' . Str::uuid() . '@aspire.com',
-            'password' => $password,
-            'password_confirmation' => $password,
-        ];
-
-        event(new Registered($user = $creator->create($details)));
-
-        $user->is_guest = true;
-        $user->save();
-
-        $guard->login($user, true);
-
-        Cookie::queue(Cookie::make(
-            config('session.cookie'),
-            Session::getId(),
-            525600, // 1 year
-            config('session.path'),
-            config('session.domain'),
-            config('session.secure'),
-            config('session.http_only'),
-            false,
-            config('session.same_site')
-        ));
-
-        Cookie::queue(Cookie::make(
-            'guest_uuid',
-            $uuid,
-            525600 // 1 year
-        ));
-
-
-        Guest::create([
-            'user_id' => $user->id,
+        $guest = Guest::create([
             'ip' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'referrer' => request()->headers->get('referer'),
@@ -96,7 +52,6 @@ class CreateGuestUser
             'city' => $city,
             'language' => request()->getPreferredLanguage(),
             'session_id' => session()->getId(),
-            'guest_uuid' => $uuid,
             'currency_code' => $position?->currencyCode ?? null,
             'country_code' => $position?->countryCode ?? null,
             'region_code' => $position?->regionCode ?? null,
@@ -111,6 +66,6 @@ class CreateGuestUser
             'timezone' => $position?->timezone ?? null
         ]);
 
-        return $user;
+        return $guest;
     }
 }
