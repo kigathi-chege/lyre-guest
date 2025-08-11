@@ -21,6 +21,10 @@ class LoginListener
     public function handle(\Illuminate\Auth\Events\Login $event): void
     {
         $request = request();
-        logger("USER LOGGED IN!", [$event, $request]);
+
+        logger("USER LOGGED IN!", [auth()->user()->toArray()]);
+        // dd($request);
+        $guestUuid = retrieve_guest_uuid($request);
+        // logger("USER LOGGED IN!", [$event, $request]);
     }
 }

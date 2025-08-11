@@ -13,6 +13,12 @@ class CreateGuest
     {
         $uuid = Cookie::get('guest_uuid') ?? (string) Str::uuid();
 
+        if ($uuid && !\Illuminate\Support\Str::isUuid($uuid)) {
+            $raw = \Illuminate\Support\Facades\Crypt::decryptString($uuid);
+            $parts = explode('|', $raw);
+            $uuid = end($parts);
+        }
+
         $guest = Guest::where('uuid', $uuid)->first();
 
         $position = Location::get(request()->ip());
