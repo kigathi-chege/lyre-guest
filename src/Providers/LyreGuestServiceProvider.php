@@ -10,14 +10,12 @@ class LyreGuestServiceProvider extends ServiceProvider
     public function register(): void
     {
         register_repositories($this->app, 'Lyre\\Guest\\Repositories', 'Lyre\\Guest\\Contracts');
+        require_once base_path('vendor/lyre/guest/src/helpers/helpers.php');
     }
 
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Event::listen(
-            \Illuminate\Auth\Events\Login::class,
-            \Lyre\Guest\Listeners\LoginListener::class
-        );
+        \Illuminate\Support\Facades\Event::subscribe(\Lyre\Guest\Listeners\UserEventSubscriber::class);
 
         register_global_observers("Lyre\\Guest\\Models");
 

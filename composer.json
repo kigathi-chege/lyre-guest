@@ -3,8 +3,11 @@
   "description": "Simple package to track all guest access",
   "type": "library",
   "license": "MIT",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "autoload": {
+    "files": [
+      "src/helpers/helpers.php"
+    ],
     "psr-4": {
       "Lyre\\Guest\\": "src/"
     }

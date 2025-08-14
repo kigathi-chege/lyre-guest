@@ -11,7 +11,11 @@ class CreateGuest
 {
     public function __invoke()
     {
-        $uuid = Cookie::get('guest_uuid') ?? (string) Str::uuid();
+        $uuid = Cookie::get('guest_uuid');
+
+        if (!$uuid) {
+            $uuid = (string) Str::uuid();
+        }
 
         if ($uuid && !\Illuminate\Support\Str::isUuid($uuid)) {
             $raw = \Illuminate\Support\Facades\Crypt::decryptString($uuid);
