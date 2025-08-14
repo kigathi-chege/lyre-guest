@@ -47,6 +47,20 @@ return new class extends Migration
                 $table->string('timezone')->nullable();
             });
         }
+
+        if (Schema::hasColumn('guests', 'user_agent')) {
+            Schema::table('guests', function (Blueprint $table) {
+                $table->text('user_agent')->nullable()->change();
+                $table->text('referrer')->nullable()->change();
+                $table->text('current_url')->nullable()->change();
+            });
+        }
+
+        if (!Schema::hasColumn('users', 'is_guest')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->boolean('is_guest')->default(false);
+            });
+        }
     }
 
     /**
