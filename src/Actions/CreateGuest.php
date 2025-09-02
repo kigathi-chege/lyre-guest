@@ -13,6 +13,10 @@ class CreateGuest
     {
         $uuid = Cookie::get('guest_uuid');
 
+        if (!$uuid && $guest = request()->attributes->get('guest')) {
+            return $guest;
+        }
+
         if (!$uuid) {
             $uuid = (string) Str::uuid();
         }
@@ -31,6 +35,8 @@ class CreateGuest
         $city    = $position?->cityName ?? null;
 
         if ($guest) {
+            logger("Guest ({$guest->uuid}) already exists, updating...");
+
             $guest->update([
                 'country' => $country ?? $guest->country,
                 'city' => $city ?? $guest->city,
@@ -51,6 +57,8 @@ class CreateGuest
             ]);
             return $guest;
         }
+
+        logger("Guest ({$uuid}) does not exist, creating...");
 
         $guest = Guest::create([
             'ip' => request()->ip(),
