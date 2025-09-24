@@ -61,6 +61,12 @@ return new class extends Migration
                 $table->boolean('is_guest')->default(false);
             });
         }
+
+        if (Schema::hasColumn('guests', 'previous_url')) {
+            Schema::table('guests', function (Blueprint $table) {
+                $table->text('previous_url')->nullable()->change();
+            });
+        }
     }
 
     /**

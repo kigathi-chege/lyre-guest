@@ -17,14 +17,22 @@ class CreateGuest
             return $guest;
         }
 
-        if (!$uuid) {
-            $uuid = (string) Str::uuid();
-        }
-
         if ($uuid && !\Illuminate\Support\Str::isUuid($uuid)) {
             $raw = \Illuminate\Support\Facades\Crypt::decryptString($uuid);
             $parts = explode('|', $raw);
-            $uuid = end($parts);
+            $uuid = null;
+            // Traverse backwards to find the first valid UUID
+            for ($i = count($parts) - 1; $i >= 0; $i--) {
+                if (\Illuminate\Support\Str::isUuid($parts[$i])) {
+                    logger("UUID: " . $parts[$i]);
+                    $uuid = $parts[$i];
+                    break;
+                }
+            }
+        }
+
+        if (!$uuid) {
+            $uuid = (string) Str::uuid();
         }
 
         $guest = Guest::where('uuid', $uuid)->first();
