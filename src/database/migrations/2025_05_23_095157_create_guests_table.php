@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('guests')) {
-            Schema::create('guests', function (Blueprint $table) {
+        $prefix = config('lyre.table_prefix');
+        $tableName = $prefix . 'guests';
+
+        if (!Schema::hasTable($tableName)) {
+            Schema::create($tableName, function (Blueprint $table) use ($tableName, $prefix) {
                 $table->id();
                 $table->timestamps();
 
