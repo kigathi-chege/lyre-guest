@@ -11,16 +11,6 @@ class Guest extends Model
 
     public function user()
     {
-        return $this->belongsTo($this->userModel());
-    }
-
-    /**
-     * Get the user model class.
-     *
-     * @return string
-     */
-    protected function userModel()
-    {
-        return config('lyre.user.model', \App\Models\User::class);
+        return $this->belongsTo(get_user_model());
     }
 }
