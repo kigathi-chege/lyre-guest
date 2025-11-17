@@ -37,7 +37,17 @@ class CreateGuest
 
         $guest = Guest::where('uuid', $uuid)->first();
 
-        $position = Location::get(request()->ip());
+        // Get location with timeout to prevent blocking requests
+        $position = null;
+        try {
+            $position = Location::get(request()->ip());
+        } catch (\Throwable $e) {
+            logger()->warning('Failed to get location for guest', [
+                'ip' => request()->ip(),
+                'error' => $e->getMessage(),
+            ]);
+            // Continue without location data
+        }
 
         $country = $position?->countryName ?? null;
         $city    = $position?->cityName ?? null;
