@@ -22,7 +22,7 @@
   "require": {
     "php": "^8.2",
     "stevebauman/location": "^7.5",
-    "lyre/lyre": "^1.1"
+    "lyre/lyre": "^2.0"
   },
   "extra": {
     "laravel": {
