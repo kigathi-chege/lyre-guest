@@ -20,7 +20,7 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "stevebauman/location": "^7.5",
     "lyre/lyre": "^2.0"
   },
