@@ -3,7 +3,7 @@
   "description": "Simple package to track all guest access",
   "type": "library",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "autoload": {
     "files": [
       "src/helpers/helpers.php"
