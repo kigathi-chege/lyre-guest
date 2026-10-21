@@ -308,6 +308,23 @@ class MergeGuestUser implements ShouldQueue
         return $relationships;
     }
 
+    /**
+     * @param  array<string, mixed>  $relation
+     */
+    protected function relationColumnsExist(array $relation): bool
+    {
+        $table = $relation['table'] ?? null;
+        if (! $table || ! \Illuminate\Support\Facades\Schema::hasTable($table)) {
+            return false;
+        }
+
+        $columns = $relation['type'] === 'morph'
+            ? [$relation['morph_id'] ?? null, $relation['morph_type'] ?? null]
+            : array_filter([$relation['column'] ?? null, $relation['related_column'] ?? null]);
+
+        return collect($columns)->every(fn ($column) => $column && \Illuminate\Support\Facades\Schema::hasColumn($table, $column));
+    }
+
     protected function performMerge(): void
     {
         $from = $this->fromId;
@@ -341,6 +358,14 @@ class MergeGuestUser implements ShouldQueue
 
         // For each relation, perform chunked updates
         foreach ($relations as $relation) {
+            // A failed statement aborts the surrounding Postgres transaction, so relations whose
+            // table/column is absent in this schema are skipped instead of attempted.
+            if (! $this->relationColumnsExist($relation)) {
+                Log::info('Skipping merge relation with missing columns', ['relation' => $relation]);
+
+                continue;
+            }
+
             try {
                 if ($relation['type'] === 'foreign') {
                     $this->updateForeignKeyInChunks($relation['table'], $relation['column'], $from, $to);

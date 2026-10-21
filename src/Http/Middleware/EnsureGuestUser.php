@@ -78,6 +78,18 @@ class EnsureGuestUser
         return $this->authenticateUserForGuest($guest);
     }
 
+    protected static ?string $unusablePasswordHash = null;
+
+    /**
+     * Guest accounts never sign in with a password. Hash an unknown random string once per
+     * process instead of a shared default (which made every guest account loginable and cost
+     * a full bcrypt round per new guest).
+     */
+    protected static function unusablePasswordHash(): string
+    {
+        return self::$unusablePasswordHash ??= \Illuminate\Support\Facades\Hash::make(Str::random(64));
+    }
+
     public function authenticateUserForGuest(Guest $guest)
     {
         $authUser = $guest->user;
@@ -95,7 +107,7 @@ class EnsureGuestUser
         $authUser = \App\Models\User::create([
             'email' => $guestEmail,
             'name' => "Guest {$uniqueId}",
-            'password' => bcrypt(config('lyre.password')),
+            'password' => self::unusablePasswordHash(),
             'is_guest' => true
         ]);
 

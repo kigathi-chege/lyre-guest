@@ -37,17 +37,7 @@ class CreateGuest
 
         $guest = Guest::where('uuid', $uuid)->first();
 
-        // Get location with timeout to prevent blocking requests
-        $position = null;
-        try {
-            $position = Location::get(request()->ip());
-        } catch (\Throwable $e) {
-            logger()->warning('Failed to get location for guest', [
-                'ip' => request()->ip(),
-                'error' => $e->getMessage(),
-            ]);
-            // Continue without location data
-        }
+        $position = config('guest.geolocation') ? $this->locate() : null;
 
         $country = $position?->countryName ?? null;
         $city    = $position?->cityName ?? null;
@@ -55,24 +45,24 @@ class CreateGuest
         if ($guest) {
             logger("Guest ({$guest->uuid}) already exists, updating...");
 
-            $guest->update([
-                'country' => $country ?? $guest->country,
-                'city' => $city ?? $guest->city,
-                'language' => request()->getPreferredLanguage() ?? $guest->language,
+            $guest->update(array_filter([
+                'country' => $country,
+                'city' => $city,
+                'language' => request()->getPreferredLanguage(),
                 'session_id' => session()->getId(),
-                'currency_code' => $position?->currencyCode ?? $guest->currency_code,
-                'country_code' => $position?->countryCode ?? $guest->currency_code,
-                'region_code' => $position?->regionCode ?? $guest->currency_code,
-                'region_name' => $position?->regionName ?? $guest->currency_code,
-                'zip_code' => $position?->zipCode ?? $guest->currency_code,
-                'iso_code' => $position?->isoCode ?? $guest->currency_code,
-                'postal_code' => $position?->postalCode ?? $guest->currency_code,
-                'latitude' => $position?->latitude ?? $guest->currency_code,
-                'longitude' => $position?->longitude ?? $guest->currency_code,
-                'metro_code' => $position?->metroCode ?? $guest->currency_code,
-                'area_code' => $position?->areaCode ?? $guest->currency_code,
-                'timezone' => $position?->timezone ?? $guest->currency_code
-            ]);
+                'currency_code' => $position?->currencyCode,
+                'country_code' => $position?->countryCode,
+                'region_code' => $position?->regionCode,
+                'region_name' => $position?->regionName,
+                'zip_code' => $position?->zipCode,
+                'iso_code' => $position?->isoCode,
+                'postal_code' => $position?->postalCode,
+                'latitude' => $position?->latitude,
+                'longitude' => $position?->longitude,
+                'metro_code' => $position?->metroCode,
+                'area_code' => $position?->areaCode,
+                'timezone' => $position?->timezone,
+            ], fn ($value) => $value !== null));
             return $guest;
         }
 
@@ -103,5 +93,22 @@ class CreateGuest
         ]);
 
         return $guest;
+    }
+
+    /**
+     * Resolve the request IP's location; failures never block guest creation.
+     */
+    protected function locate(): ?\Stevebauman\Location\Position
+    {
+        try {
+            return Location::get(request()->ip()) ?: null;
+        } catch (\Throwable $e) {
+            logger()->warning('Failed to get location for guest', [
+                'ip' => request()->ip(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 }
